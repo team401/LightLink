@@ -2,10 +2,12 @@
 #include "Definitions.h"
 #include <Arduino.h>
 
-Strip::Strip(uint8_t pin, int length_, neoPixelType type) {
-	pixels = Adafruit_NeoPixel(length, pin, type);
-	length = length_;
+void Strip::init(uint8_t pin, uint16_t length_, neoPixelType type) {
 	initialized = true;
+	length = length_;
+	pixels = Adafruit_NeoPixel(length, pin, type);
+	pixels.begin();
+	showPixels();
 }
 
 void Strip::setAll(uint8_t r, uint8_t g, uint8_t b, uint8_t w) {
@@ -24,10 +26,10 @@ void Strip::update() {
 			doAction(255, 0, 0, 0);
 			break;
 		case ORANGE:
-			doAction(255, 128, 0, 0);
+			doAction(255, 32, 0, 0);
 			break;
 		case YELLOW:
-			doAction(255, 255, 0, 0);
+			doAction(255, 128, 0, 0);
 			break;
 		case GREEN:
 			doAction(0, 255, 0, 0);
@@ -45,6 +47,7 @@ void Strip::update() {
 			doAction(0, 0, 0, 0);
 			break;
 		}
+		showPixels();
 	}
 }
 
@@ -60,20 +63,19 @@ void Strip::doAction(uint8_t r, uint8_t g, uint8_t b, uint8_t w) {
 			blinkState = !blinkState;
 			if (action == BLINK_SLOW) nextBlink = lastUpdated + SLOW_BLINK_SPEED;
 			if (action == BLINK_FAST) nextBlink = lastUpdated + FAST_BLINK_SPEED;
-			blinkCounter++;
+			if (action == BLINK_FAST) blinkCounter++;
+		}
+		if (blinkCounter > NUM_BLINKS * 2) { //Blink is over
+			blinkState = STATE_OFF;
+			blinkCounter = 0;
+			color = BLACK;
+			action = SOLID;
 		}
 		if (blinkState) {
 			setAll(r, g, b, w);
 		} else {
 			setAll(0, 0, 0, 0);
 		}
-		if (blinkCounter > NUM_BLINKS*2) { //Blink is over
-			blinkState = STATE_OFF;
-			blinkCounter = 0;
-			color = BLACK;
-			action = SOLID;
-		}
 		break;
 	}
-	pixels.show();
 }

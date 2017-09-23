@@ -2,7 +2,7 @@
 
 #define SLOW_BLINK_SPEED 500
 #define FAST_BLINK_SPEED 100
-#define NUM_BLINKS 5
+#define NUM_BLINKS 9
 
 #define START 0x00 //The commmand starting character
 #define END 0xFF //The command ending character

@@ -9,15 +9,15 @@
 #include "Strip.h"
 #include "Definitions.h"
 
-volatile uint8_t command[3]; //Array to hold the command being built
+uint8_t command[3]; //Array to hold the command being built
 uint8_t cursor = 0; //Cursor to track array position
 uint8_t current; //Current character being received
-Strip strips[16] = { Strip() }; //Array of strips 
+Strip strips[16]; //Array of strips 
 uint8_t stripCursor = 0;
 
-void addStrip(uint8_t pin, int length, neoPixelType type = NEO_GRBW + NEO_KHZ800) {
+void addStrip(uint8_t pin, uint16_t length, neoPixelType type = NEO_GRBW + NEO_KHZ800) {
 	if (stripCursor < 16) {
-		strips[stripCursor++] = Strip(pin, length, type);
+		strips[stripCursor++].init(pin, length, type);
 	}
 }
 
@@ -28,6 +28,7 @@ void setup() {
 	//ADD STRIPS HERE
 	//addStrip(pin, length); <- Strip 0
 	//addStrip(pin, length); <- Strip 1
+	addStrip(6, 17);
 }
 
 // the loop function runs over and over again until power down or reset
@@ -56,6 +57,7 @@ void listener(int numBytes) {
 }
 
 // Runs the current command
+
 void update() {
 	uint8_t strip = command[0] - 1;
 	uint8_t color = command[1];
@@ -64,4 +66,5 @@ void update() {
 	strips[strip].color = color;
 	strips[strip].action = action;
 }
+
 

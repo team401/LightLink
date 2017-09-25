@@ -9,14 +9,17 @@ public:
 	uint16_t length;
 	uint8_t color = BLACK;
 	uint8_t action = SOLID;
-    bool blinkState = 0;
+	uint8_t speed = SLOW;
+	uint8_t lastAction = SOLID;
+    bool state = 0;
 	unsigned long lastUpdated = 0;
-	unsigned long nextBlink = 0;
-	uint8_t blinkCounter = 0;
+	unsigned long next = 0;
+	long counter = 0;
 	Adafruit_NeoPixel pixels;
 	void showPixels() { pixels.show(); }
 	void setBrightness(uint8_t brightness) { pixels.setBrightness(brightness); }
 private:
 	bool initialized = false;
 	void doAction(uint8_t r, uint8_t g, uint8_t b, uint8_t w);
+	uint32_t wheel(uint8_t pos);
 };

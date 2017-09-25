@@ -9,7 +9,7 @@
 #include "Strip.h"
 #include "Definitions.h"
 
-uint8_t command[3]; //Array to hold the command being built
+uint8_t command[4]; //Array to hold the command being built
 uint8_t cursor = 0; //Cursor to track array position
 uint8_t current; //Current character being received
 Strip strips[16]; //Array of strips 
@@ -29,6 +29,8 @@ void setup() {
 	//addStrip(pin, length); <- Strip 0
 	//addStrip(pin, length); <- Strip 1
 	addStrip(6, 17);
+	strips[0].setBrightness(255);
+
 }
 
 // the loop function runs over and over again until power down or reset
@@ -50,7 +52,7 @@ void listener(int numBytes) {
 		} else {
 			command[cursor++] = current;
 		}
-		if (cursor > 2) {
+		if (cursor > 3) {
 			cursor = 0;
 		}
 	}
@@ -62,9 +64,11 @@ void update() {
 	uint8_t strip = command[0] - 1;
 	uint8_t color = command[1];
 	uint8_t action = command[2];
+	uint8_t speed = command[3];
 
 	strips[strip].color = color;
 	strips[strip].action = action;
+	strips[strip].speed = speed;
 }
 
 

@@ -11,6 +11,9 @@ public:
 	uint8_t action = SOLID;
 	uint8_t speed = SLOW;
 	uint8_t lastAction = SOLID;
+	uint8_t colorFromSignal = BLACK;
+	uint8_t actionFromSignal = SOLID;
+	uint8_t speedFromSignal = SLOW;
     bool state = 0;
 	unsigned long lastUpdated = 0;
 	unsigned long next = 0;

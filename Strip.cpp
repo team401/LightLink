@@ -87,8 +87,9 @@ void Strip::doAction(uint8_t r, uint8_t g, uint8_t b, uint8_t w) {
 		if (counter > NUM_BLINKS) { //Blink is over
 			state = STATE_OFF;
 			counter = 0;
-			color = BLACK;
-			action = SOLID;
+			color = colorFromSignal;
+			action = actionFromSignal;
+			speed = speedFromSignal;
 		}
 		if (state) {
 			setAll(r, g, b, w);

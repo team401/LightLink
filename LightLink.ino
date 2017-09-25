@@ -66,9 +66,24 @@ void update() {
 	uint8_t action = command[2];
 	uint8_t speed = command[3];
 
-	strips[strip].color = color;
-	strips[strip].action = action;
-	strips[strip].speed = speed;
+	if (action == SIGNAL && strips[strip].action == SIGNAL) {
+		strips[strip].color = color;
+		strips[strip].action = action;
+		strips[strip].speed = speed;
+	} else {
+		if (action != SIGNAL) {
+			strips[strip].colorFromSignal = color;
+			strips[strip].actionFromSignal = action;
+			strips[strip].speedFromSignal = speed;
+		}
+		if (strips[strip].action != SIGNAL) {
+			strips[strip].color = color;
+			strips[strip].action = action;
+			strips[strip].speed = speed;
+		}
+	}
+
+
 }
 
 

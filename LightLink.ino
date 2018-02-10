@@ -28,8 +28,7 @@ void setup() {
 	//ADD STRIPS HERE
 	//addStrip(pin, length); <- Strip 0
 	//addStrip(pin, length); <- Strip 1
-	addStrip(6, 17);
-	strips[0].setBrightness(255);
+	addStrip(6, 29);
 
 }
 

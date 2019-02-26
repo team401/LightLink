@@ -55,20 +55,39 @@
 // Strip class
 class Strip {
 public:
-  void init(uint8_t pin, uint16_t length_, neoPixelType type = NEO_GRBW + NEO_KHZ800) {
+  void init(uint8_t pin, uint16_t length_, neoPixelType type = NEO_GRBW + NEO_KHZ800, uint16_t offset_ = 0, bool reverse_ = false) {
   	initialized = true;
 	length = length_;
+  offset = offset_;
+  reverse = reverse_;
 	pixels = Adafruit_NeoPixel(length, pin, type);
 	pixels.begin();
 	showPixels();
   }
   void setAll(uint8_t r, uint8_t g, uint8_t b, uint8_t w) {
   	if (initialized) {
-		for (int i = 0; i < length; i++) {
+		for (int i = offset; i < offset + length; i++) {
 			pixels.setPixelColor(i, r, g, b, w);
 		}
 	}
   }
+
+  void setPixelColor(uint16_t pixel, uint8_t r, uint8_t g, uint8_t b, uint8_t w) {
+    if (reverse) {
+      pixels.setPixelColor((length + offset) - pixel, r, g, b, w);
+    } else {
+      pixels.setPixelColor(pixel + offset, r, g, b, w);
+    }
+  }
+
+  void setPixelColor(uint16_t pixel, uint32_t c) {
+    if (reverse) {
+      pixels.setPixelColor((length + offset) - pixel, c);
+    } else {
+      pixels.setPixelColor(pixel + offset, c);
+    }
+  }
+  
   void update() {
   	if (initialized) {
 		lastUpdated = millis();
@@ -102,6 +121,8 @@ public:
 	}
   }
   uint16_t length;
+  uint16_t offset;
+  bool reverse;
   uint8_t color = BLACK;
   uint8_t action = SOLID;
   uint8_t speed = SLOW;
@@ -173,7 +194,7 @@ private:
 			counter = 0;
 		}
 		setAll(0, 0, 0, 0);
-		pixels.setPixelColor(counter, r, g, b, w);
+		setPixelColor(counter, r, g, b, w);
 		break;
 	case BOUNCE:
 		if (lastUpdated > next) {
@@ -187,9 +208,9 @@ private:
 		}
 		setAll(0, 0, 0, 0);
 		if (state) {
-			pixels.setPixelColor((length - 1) - counter, r, g, b, w);
+			setPixelColor((length - 1) - counter, r, g, b, w);
 		} else {
-			pixels.setPixelColor(counter, r, g, b, w);
+			setPixelColor(counter, r, g, b, w);
 		}
 		break;
 	case SPLIT:
@@ -203,14 +224,14 @@ private:
 			if (counter >= length / 2) {
 				counter = 0;
 			}
-			pixels.setPixelColor(length / 2 - counter - 1, r, g, b, w);
-			pixels.setPixelColor(length / 2 + counter, r, g, b, w);
+			setPixelColor(length / 2 - counter - 1, r, g, b, w);
+			setPixelColor(length / 2 + counter, r, g, b, w);
 		} else {
 			if (counter > length / 2) {
 				counter = 0;
 			}
-			pixels.setPixelColor(length / 2 + counter, r, g, b, w);
-			pixels.setPixelColor(length / 2 - counter, r, g, b, w);
+			setPixelColor(length / 2 + counter, r, g, b, w);
+			setPixelColor(length / 2 - counter, r, g, b, w);
 		}
 		break;
 	case BREATHE:
@@ -239,7 +260,7 @@ private:
 			counter = 0;
 		}
 		for (int i = 0; i < length; i++) {
-			pixels.setPixelColor(i, wheel(((i * 256 / length) + counter) & 255));
+			setPixelColor(i, wheel(((i * 256 / length) + counter) & 255));
 		}
 		break;
 	}

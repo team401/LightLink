@@ -51,40 +51,50 @@
 #define STATE_FORWARD 0
 #define STATE_REVERSE 1
 
+//Native pixels
+static Adafruit_NeoPixel *native_pixels[16] = { 0 };
 
 // Strip class
 class Strip {
 public:
   void init(uint8_t pin, uint16_t length_, neoPixelType type = NEO_GRBW + NEO_KHZ800, uint16_t offset_ = 0, bool reverse_ = false) {
   	initialized = true;
-	length = length_;
-  offset = offset_;
-  reverse = reverse_;
-	pixels = Adafruit_NeoPixel(length, pin, type);
-	pixels.begin();
-	showPixels();
+	  length = length_;
+    offset = offset_;
+    reverse = reverse_;
+    if (native_pixels[pin] == 0) {
+      //Initialize a new NeoPixel object at the correct location in the array
+      native_pixels[pin] = new Adafruit_NeoPixel(length, pin, type);
+    } else if (native_pixels[pin]->numPixels() < offset + length) {
+      //Strip object is too short, reinitialize a new one.
+      native_pixels[pin]->updateLength(native_pixels[pin]->numPixels() + length);
+      //native_pixels[pin] = new Adafruit_NeoPixel(native_pixels[pin]->length + length, pin, type);
+    }
+	  pixels = native_pixels[pin];
+	  pixels->begin();
+	  showPixels();
   }
   void setAll(uint8_t r, uint8_t g, uint8_t b, uint8_t w) {
   	if (initialized) {
 		for (int i = offset; i < offset + length; i++) {
-			pixels.setPixelColor(i, r, g, b, w);
+			pixels->setPixelColor(i, r, g, b, w);
 		}
 	}
   }
 
   void setPixelColor(uint16_t pixel, uint8_t r, uint8_t g, uint8_t b, uint8_t w) {
     if (reverse) {
-      pixels.setPixelColor((length + offset) - pixel, r, g, b, w);
+      pixels->setPixelColor((length + offset) - pixel - 1, r, g, b, w);
     } else {
-      pixels.setPixelColor(pixel + offset, r, g, b, w);
+      pixels->setPixelColor(pixel + offset, r, g, b, w);
     }
   }
 
   void setPixelColor(uint16_t pixel, uint32_t c) {
     if (reverse) {
-      pixels.setPixelColor((length + offset) - pixel, c);
+      pixels->setPixelColor((length + offset) - pixel - 1, c);
     } else {
-      pixels.setPixelColor(pixel + offset, c);
+      pixels->setPixelColor(pixel + offset, c);
     }
   }
   
@@ -134,22 +144,22 @@ public:
   unsigned long lastUpdated = 0;
   unsigned long next = 0;
   long counter = 0;
-  Adafruit_NeoPixel pixels;
-  void showPixels() { pixels.show(); }
-  void setBrightness(uint8_t brightness) { pixels.setBrightness(brightness); }
+  Adafruit_NeoPixel *pixels;
+  void showPixels() { pixels->show(); }
+  void setBrightness(uint8_t brightness) { pixels->setBrightness(brightness); }
 private:
   bool initialized = false;
     uint32_t wheel(uint8_t pos) {
   	pos = 255 - pos;
 	if (pos < 85) {
-		return pixels.Color(255 - pos * 3, 0, pos * 3);
+		return pixels->Color(255 - pos * 3, 0, pos * 3);
 	}
 	if (pos < 170) {
 		pos -= 85;
-		return pixels.Color(0, pos * 3, 255 - pos * 3);
+		return pixels->Color(0, pos * 3, 255 - pos * 3);
 	}
 	pos -= 170;
-	return pixels.Color(pos * 3, 255 - pos * 3, 0);
+	return pixels->Color(pos * 3, 255 - pos * 3, 0);
   }
   void doAction(uint8_t r, uint8_t g, uint8_t b, uint8_t w) {
   if (action != lastAction) {
@@ -281,16 +291,16 @@ uint8_t current; //Current character being received
 Strip strips[16]; //Array of strips 
 uint8_t stripCursor = 0;
 
-void addStrip(uint8_t pin, uint16_t length, neoPixelType type = NEO_GRBW + NEO_KHZ800) {
+void addStrip(uint8_t pin, uint16_t length, neoPixelType type = NEO_GRBW + NEO_KHZ800, uint8_t offset = 0, bool reverse = false) {
 	if (stripCursor < 16) {
-		strips[stripCursor++].init(pin, length, type);
+		strips[stripCursor++].init(pin, length, type, offset, reverse);
 	}
 }
 
 void setup() {
 	Wire.begin(0x42); //<- SET I2C ADDRESS HERE
 	Wire.onReceive(listener);
-
+ 
 	//ADD STRIPS HERE
 	//addStrip(pin, length); <- Strip 0
 	//addStrip(pin, length); <- Strip 1
@@ -349,5 +359,3 @@ void update() {
 
 
 }
-
-
